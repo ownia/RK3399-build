@@ -20,7 +20,7 @@ TF_A_PATH		?= $(ROOT)/atf
 BINARIES_PATH		?= $(ROOT)/out/bin
 U-BOOT_PATH		?= $(ROOT)/u-boot
 
-DEBUG = 1
+DEBUG = 0
 
 ################################################################################
 # Targets
@@ -45,7 +45,6 @@ TF_A_OUT = $(TF_A_PATH)/build/rk3399/debug
 endif
 
 TF_A_FLAGS ?= \
-	ARCH=aarch64 \
 	PLAT=rk3399 \
 	DEBUG=$(TF_A_DEBUG) \
 	LOG_LEVEL=$(TF_A_LOGLVL)
@@ -59,6 +58,7 @@ TF_A_FLAGS ?= \
 	#AARCH64_SP=optee \
 	#BL31=${TF_A_OUT}/bl31/bl31.elf \
 	#BL33=$(ROOT)/u-boot/u-boot.bin \
+	#ARCH=aarch64 \
 
 arm-tf:
 	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) all
@@ -78,10 +78,12 @@ arm-tf-clean:
 ################################################################################
 U-BOOT_EXPORTS ?= \
 	CROSS_COMPILE="$(CCACHE)$(AARCH64_CROSS_COMPILE)"\
-	BL31=${TF_A_OUT}/bl31/bl31.elf
+	BL31=${TF_A_OUT}/bl31/bl31.elf \
+	ARCH=arm64
 
 U-BOOT_DEFCONFIG_FILES := \
-	$(U-BOOT_PATH)/configs/leez-rk3399_defconfig
+	$(U-BOOT_PATH)/configs/leez-rk3399_defconfig \
+	$(ROOT)/build/kconfig/1505_leez_Copy.config
 
 .PHONY: u-boot
 u-boot: arm-tf
