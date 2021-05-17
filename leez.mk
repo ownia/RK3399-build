@@ -62,13 +62,7 @@ TF_A_FLAGS ?= \
 
 arm-tf:
 	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) all
-	mkdir -p $(BINARIES_PATH)
-	ln -sf $(TF_A_OUT)/bl1.bin $(BINARIES_PATH)
-	ln -sf $(TF_A_OUT)/bl2.bin $(BINARIES_PATH)
-	ln -sf $(OPTEE_OS_HEADER_V2_BIN) $(BINARIES_PATH)/bl32.bin
-	ln -sf $(OPTEE_OS_PAGER_V2_BIN) $(BINARIES_PATH)/bl32_extra1.bin
-	ln -sf $(OPTEE_OS_PAGEABLE_V2_BIN) $(BINARIES_PATH)/bl32_extra2.bin
-	ln -sf $(ROOT)/u-boot/u-boot.bin $(BINARIES_PATH)/bl33.bin
+
 
 arm-tf-clean:
 	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) clean
@@ -90,6 +84,10 @@ u-boot: arm-tf
 	cd $(U-BOOT_PATH) && \
 		scripts/kconfig/merge_config.sh $(U-BOOT_DEFCONFIG_FILES)
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) all
+
+	mkdir -p $(BINARIES_PATH)
+	ln -sf $(ROOT)/u-boot/idbloader.img $(BINARIES_PATH)/idbloader.img
+	ln -sf $(ROOT)/u-boot/u-boot.itb $(BINARIES_PATH)/u-boot.itb
 
 .PHONY: u-boot-clean
 u-boot-clean:
