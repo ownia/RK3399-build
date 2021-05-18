@@ -74,7 +74,7 @@ arm-tf-clean:
 U-BOOT_EXPORTS ?= \
 	CROSS_COMPILE="$(CCACHE)$(AARCH64_CROSS_COMPILE)"\
 	BL31=${TF_A_OUT}/bl31/bl31.elf \
-	ARCH=arm
+	ARCH=arm64
 
 U-BOOT_DEFCONFIG_FILES := \
 	$(U-BOOT_PATH)/configs/evb-rk3399_defconfig \
