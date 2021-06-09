@@ -63,11 +63,8 @@ kernel:
 	
 	cp -f $(KERNEL_PATH)/initramfs-toybrick-$(VERSION).img $(KERNEL_PATH)/boot_linux/
 	cp -f $(KERNEL_PATH)/rescue.sh $(KERNEL_PATH)/boot_linux/
-	if [ "`uname -i`" == "aarch64" ]; then
-		echo y | mke2fs -b 4096 -d $(KERNEL_PATH)/boot_linux -i 8192 -t ext2 $(KERNEL_PATH)/boot_linux.img $((64 * 1024 * 1024 / 4096))
-	else
-		genext2fs -b 32768 -B $((64 * 1024 * 1024 / 32768)) -d $(KERNEL_PATH)/boot_linux -i 8192 -U $(KERNEL_PATH)/boot_linux.img
-	fi
+	
+	genext2fs -b 32768 -B 2048 -d $(KERNEL_PATH)/boot_linux -i 8192 -U $(KERNEL_PATH)/boot_linux.img
 
 	
 kernel-clean:
