@@ -61,11 +61,15 @@ TF_A_FLAGS ?= \
 	#ARCH=aarch64 \
 
 arm-tf:
-	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) all
+	cd $(TF_A_PATH) && \
+		git reset --hard refs/tags/v2.4 && \
+		git clean -fdx
+	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) bl31
+
 
 
 arm-tf-clean:
-	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) clean
+	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) realclean
 
 ################################################################################
 # U-boot
@@ -76,21 +80,53 @@ U-BOOT_EXPORTS ?= \
 	ARCH=arm64
 
 U-BOOT_DEFCONFIG_FILES := \
-	$(U-BOOT_PATH)/configs/leez-rk3399_defconfig \
-	$(ROOT)/build/kconfig/1505_leez_Copy.config
+	$(U-BOOT_PATH)/configs/toybrick-prod_defconfig \
+	$(ROOT)/build/kconfig/TB-RK3399proD.config
+
+U-BOOT_PATCHES := \
+	$(ROOT)/build/0001-CapsuleCommon.patch \
+	$(ROOT)/build/0002-Toybrick-uboot-bringup-code.patch \
+	$(ROOT)/build/0003-TBRK3399proD-DFU.patch
+
 
 .PHONY: u-boot
 u-boot: arm-tf
 	cd $(U-BOOT_PATH) && \
-		scripts/kconfig/merge_config.sh $(U-BOOT_DEFCONFIG_FILES)
-	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) all
+		git reset --hard refs/tags/v2021.07 && \
+		git clean -fdx
+		
+	cd $(U-BOOT_PATH) && \
+		git apply $(U-BOOT_PATCHES)
+	
+	rm -rf $(BINARIES_PATH)/u-boot
+	mkdir -p $(BINARIES_PATH)/u-boot
+	cd $(U-BOOT_PATH) && \
+		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/u-boot $(U-BOOT_DEFCONFIG_FILES)
+	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/u-boot all
 
-	mkdir -p $(BINARIES_PATH)
-	ln -sf $(ROOT)/u-boot/idbloader.img $(BINARIES_PATH)/idbloader.img
-	ln -sf $(ROOT)/u-boot/u-boot.itb $(BINARIES_PATH)/u-boot.itb
+.PHONY: capsule
+capsule: arm-tf
+	cd $(U-BOOT_PATH) && \
+		git reset --hard refs/tags/v2021.07-rc1
+	cd $(U-BOOT_PATH) && \
+		git apply $(U-BOOT_PATCHES)
+	
+	rm -rf $(BINARIES_PATH)/capsule
+	mkdir -p $(BINARIES_PATH)/capsule
+	cd $(U-BOOT_PATH) && \
+		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/capsule $(U-BOOT_DEFCONFIG_FILES) $(ROOT)/build/kconfig/Capsule.config
+	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/capsule all
+	cp $(ROOT)/build/acapsule.its $(BINARIES_PATH)/capsule/acapsule.its
+	cd $(BINARIES_PATH)/capsule && \
+		tools/mkimage -f $(BINARIES_PATH)/capsule/acapsule.its capsule.itb
+	cd $(BINARIES_PATH)/capsule && \
+		tools/mkeficapsule --fit $(BINARIES_PATH)/capsule/capsule.itb --index 1 capsule.bin
+
 
 .PHONY: u-boot-clean
 u-boot-clean:
-	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) clean
+	rm -rf $(BINARIES_PATH)/u-boot
+	rm -rf $(BINARIES_PATH)/capsule
+	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) distclean
 
 

@@ -1,0 +1,36 @@
+/*
+ * Automatic software update for U-Boot
+ * Make sure the flashing addresses ('load' prop) is correct for your board!
+ */
+
+/dts-v1/;
+
+/ {
+	description = "Automatic U-Boot environment update";
+	#address-cells = <1>;
+
+	images {
+		idbloader-img {
+			description = "U-Boot binary SDMMC";
+			data = /incbin/("idbloader.img");
+			compression = "none";
+			type = "firmware";
+			arch = "arm64";
+			load = <0x40>;
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+		u-boot-itb {
+			description = "U-Boot binary";
+			data = /incbin/("u-boot.itb");
+			compression = "none";
+			type = "firmware";
+			arch = "arm64";
+			load = <0x4000>;
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+	};
+};

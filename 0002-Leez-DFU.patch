@@ -1,0 +1,42 @@
+diff --git a/board/rockchip/evb_rk3399/evb-rk3399.c b/board/rockchip/evb_rk3399/evb-rk3399.c
+index abb76585cf..bb8380f320 100644
+--- a/board/rockchip/evb_rk3399/evb-rk3399.c
++++ b/board/rockchip/evb_rk3399/evb-rk3399.c
+@@ -10,6 +10,9 @@
+ #include <asm/arch-rockchip/periph.h>
+ #include <power/regulator.h>
+ 
++#include <dfu.h>
++#include <env.h>
++
+ #ifndef CONFIG_SPL_BUILD
+ int board_early_init_f(void)
+ {
+@@ -30,3 +33,27 @@ out:
+ 	return 0;
+ }
+ #endif
++
++/* ALT_INFO Macro Function below added for DFU_ALT_INFO */
++#ifdef CONFIG_SET_DFU_ALT_INFO
++#define CONFIG_DFU_ALT_BOOT_SD \
++	"mmc 1=idbloader-img raw 0x40 0x2000;u-boot-itb raw 0x4000 0x2000\0"
++#define CONFIG_DFU_ALT_BOOT_EMMC \
++	"mmc 0=idbloader-img raw 0x40 0x2000;u-boot-itb raw 0x4000 0x2000\0"
++
++void set_dfu_alt_info(char *interface, char *devstr)
++{
++	char *alt_info;
++	struct mmc *mmc;
++	int dev_num = 0;
++	alt_info = env_get("dfu_alt_info");
++	if (alt_info)
++		return;
++	dev_num = simple_strtoul(devstr ? devstr:"0", NULL, 10);
++	mmc = find_mmc_device(dev_num);
++	if (!mmc || mmc_init(mmc))
++		return;
++	alt_info = IS_SD(mmc) ? CONFIG_DFU_ALT_BOOT_SD : CONFIG_DFU_ALT_BOOT_EMMC;
++	env_set("dfu_alt_info", alt_info);
++}
++#endif
