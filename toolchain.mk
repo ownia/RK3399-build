@@ -5,15 +5,23 @@ SHELL				= /bin/bash
 ROOT				?= $(CURDIR)/..
 TOOLCHAIN_ROOT			?= $(ROOT)/toolchains
 
+ifneq (, $(shell which arm-linux-gnueabihf-gcc))
+AARCH32_CROSS_COMPILE 		?= arm-linux-gnueabihf-
+else
 AARCH32_PATH 			?= $(TOOLCHAIN_ROOT)/aarch32
 AARCH32_CROSS_COMPILE 		?= $(AARCH32_PATH)/bin/arm-linux-gnueabihf-
 AARCH32_GCC_VERSION 		?= gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf
 SRC_AARCH32_GCC 		?= https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/$(AARCH32_GCC_VERSION).tar.xz
+endif
 
+ifneq (, $(shell which aarch64-linux-gnu-gcc))
+AARCH64_CROSS_COMPILE 		?= aarch64-linux-gnu-
+else
 AARCH64_PATH 			?= $(TOOLCHAIN_ROOT)/aarch64
 AARCH64_CROSS_COMPILE 		?= $(AARCH64_PATH)/bin/aarch64-linux-gnu-
 AARCH64_GCC_VERSION 		?= gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu
 SRC_AARCH64_GCC 		?= https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/$(AARCH64_GCC_VERSION).tar.xz
+endif
 
 # Download toolchain macro for saving some repetition
 # $(1) is $AARCH.._PATH		: i.e., path to the destination
