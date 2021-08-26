@@ -66,8 +66,6 @@ arm-tf:
 		git clean -fdx
 	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) bl31
 
-
-
 arm-tf-clean:
 	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) realclean
 
@@ -83,21 +81,8 @@ U-BOOT_DEFCONFIG_FILES := \
 	$(U-BOOT_PATH)/configs/leez-rk3399_defconfig \
 	$(ROOT)/build/kconfig/Leez-P710.config
 
-U-BOOT_PATCHES := \
-	$(ROOT)/build/0001-CapsuleCommon.patch \
-	$(ROOT)/build/0002-Leez-DFU.patch
-
-
 .PHONY: u-boot
 u-boot: arm-tf
-	cd $(U-BOOT_PATH) && \
-		git reset --hard refs/tags/v2021.07 && \
-		git clean -fdx
-		
-	cd $(U-BOOT_PATH) && \
-		git apply $(U-BOOT_PATCHES)
-	
-	#rm -rf $(BINARIES_PATH)/u-boot
 	mkdir -p $(BINARIES_PATH)/u-boot
 	cd $(U-BOOT_PATH) && \
 		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/u-boot $(U-BOOT_DEFCONFIG_FILES)
@@ -105,12 +90,6 @@ u-boot: arm-tf
 
 .PHONY: capsule
 capsule: arm-tf
-	cd $(U-BOOT_PATH) && \
-		git reset --hard refs/tags/v2021.07-rc1
-	cd $(U-BOOT_PATH) && \
-		git apply $(U-BOOT_PATCHES)
-	
-	#rm -rf $(BINARIES_PATH)/capsule
 	mkdir -p $(BINARIES_PATH)/capsule
 	cd $(U-BOOT_PATH) && \
 		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/capsule $(U-BOOT_DEFCONFIG_FILES) $(ROOT)/build/kconfig/Capsule.config
@@ -121,11 +100,8 @@ capsule: arm-tf
 	cd $(BINARIES_PATH)/capsule && \
 		tools/mkeficapsule --fit $(BINARIES_PATH)/capsule/capsule.itb --index 1 capsule.bin
 
-
 .PHONY: u-boot-clean
 u-boot-clean:
 	rm -rf $(BINARIES_PATH)/u-boot
 	rm -rf $(BINARIES_PATH)/capsule
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) distclean
-
-

@@ -79,26 +79,12 @@ U-BOOT_EXPORTS ?= \
 	BL31=${TF_A_OUT}/bl31/bl31.elf \
 	ARCH=arm64
 
-
 U-BOOT_DEFCONFIG_FILES := \
 	$(U-BOOT_PATH)/configs/rockpro64-rk3399_defconfig \
 	$(ROOT)/build/kconfig/RockPro64.config
 
-
-U-BOOT_PATCHES := \
-	$(ROOT)/build/0001-CapsuleCommon.patch \
-	$(ROOT)/build/0002-Rockpro64-DFU.patch
-
-
 .PHONY: u-boot
 u-boot: arm-tf
-	cd $(U-BOOT_PATH) && \
-		git reset --hard refs/tags/v2021.07 && \
-		git clean -fdx
-		
-	cd $(U-BOOT_PATH) && \
-		git apply $(U-BOOT_PATCHES)
-	
 	rm -rf $(BINARIES_PATH)/u-boot
 	mkdir -p $(BINARIES_PATH)/u-boot
 	cd $(U-BOOT_PATH) && \
@@ -107,11 +93,6 @@ u-boot: arm-tf
 
 .PHONY: capsule
 capsule: arm-tf
-	cd $(U-BOOT_PATH) && \
-		git reset --hard refs/tags/v2021.07-rc1
-	cd $(U-BOOT_PATH) && \
-		git apply $(U-BOOT_PATCHES)
-	
 	rm -rf $(BINARIES_PATH)/capsule
 	mkdir -p $(BINARIES_PATH)/capsule
 	cd $(U-BOOT_PATH) && \
@@ -123,11 +104,8 @@ capsule: arm-tf
 	cd $(BINARIES_PATH)/capsule && \
 		tools/mkeficapsule --fit $(BINARIES_PATH)/capsule/capsule.itb --index 1 capsule.bin
 
-
 .PHONY: u-boot-clean
 u-boot-clean:
 	rm -rf $(BINARIES_PATH)/u-boot
 	rm -rf $(BINARIES_PATH)/capsule
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) distclean
-
-
