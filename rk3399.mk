@@ -101,3 +101,11 @@ u-boot-clean:
 	rm -rf $(BINARIES_PATH)/u-boot
 	rm -rf $(BINARIES_PATH)/capsule
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) distclean
+
+.PHONY: flash
+flash:
+	rkdeveloptool db MiniLoaderAll.bin
+	sleep 1s
+	rkdeveloptool wl 0x40 $(BINARIES_PATH)/u-boot/idbloader.img
+	rkdeveloptool wl 0x4000 $(BINARIES_PATH)/u-boot/u-boot.itb
+	rkdeveloptool rd
