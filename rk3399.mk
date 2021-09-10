@@ -25,7 +25,7 @@ DEBUG = 0
 ################################################################################
 # Targets
 ################################################################################
-all: arm-tf u-boot
+all: arm-tf u-boot capsule
 clean: arm-tf-clean u-boot-clean
 
 include toolchain.mk
@@ -85,21 +85,16 @@ u-boot: arm-tf
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/u-boot all
 
 .PHONY: capsule
-capsule: arm-tf
-	mkdir -p $(BINARIES_PATH)/capsule
-	cd $(U-BOOT_PATH) && \
-		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/capsule $(U-BOOT_DEFCONFIG_FILES) $(ROOT)/build/kconfig/Capsule.config
-	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/capsule all
-	cp $(ROOT)/build/acapsule.its $(BINARIES_PATH)/capsule/acapsule.its
-	cd $(BINARIES_PATH)/capsule && \
-		tools/mkimage -f $(BINARIES_PATH)/capsule/acapsule.its capsule.itb
-	cd $(BINARIES_PATH)/capsule && \
-		tools/mkeficapsule --fit $(BINARIES_PATH)/capsule/capsule.itb --index 1 capsule.bin
+capsule: u-boot
+	cp $(ROOT)/build/acapsule.its $(BINARIES_PATH)/u-boot/acapsule.its
+	cd $(BINARIES_PATH)/u-boot && \
+		tools/mkimage -f $(BINARIES_PATH)/u-boot/acapsule.its capsule.itb
+	cd $(BINARIES_PATH)/u-boot && \
+		tools/mkeficapsule --fit $(BINARIES_PATH)/u-boot/capsule.itb --index 1 capsule.bin
 
 .PHONY: u-boot-clean
 u-boot-clean:
 	rm -rf $(BINARIES_PATH)/u-boot
-	rm -rf $(BINARIES_PATH)/capsule
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) distclean
 
 .PHONY: flash
