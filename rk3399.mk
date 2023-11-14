@@ -62,7 +62,7 @@ TF_A_FLAGS ?= \
 
 arm-tf:
 	cd $(TF_A_PATH) && \
-		git reset --hard refs/tags/v2.4 && \
+		git reset --hard refs/tags/v2.6 && \
 		git clean -fdx
 	$(TF_A_EXPORTS) $(MAKE) -C $(TF_A_PATH) $(TF_A_FLAGS) bl31
 
